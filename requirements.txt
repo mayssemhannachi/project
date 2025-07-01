@@ -1,0 +1,8 @@
+pandas
+pymongo
+nltk
+beautifulsoup4
+langdetect
+vaderSentiment
+elasticsearch
+pytest
