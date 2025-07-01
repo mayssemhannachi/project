@@ -1,0 +1,36 @@
+version: '3'
+services:
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  elasticsearch:
+    image: elasticsearch:8.8.0
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - xpack.security.http.ssl.enabled=false
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+    ports:
+      - "9200:9200"
+
+  kibana:
+    image: kibana:8.8.0
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+
+  app:
+    build: .
+    depends_on:
+      - mongodb
+      - elasticsearch
+    environment:
+    - MONGO_URI=mongodb://mongodb:27017/
+
+volumes:
+  mongo_data:
