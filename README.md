@@ -1,166 +1,201 @@
-Data Science Technical Test - Mayssem Hannachi
-Overview
-This project processes a Kaggle cyberbullying dataset (8,452 rows) through a pipeline involving MongoDB storage, text preprocessing, NLP analysis, Elasticsearch indexing, and Kibana visualization. The dataset is processed in five stages, with corresponding test units to ensure functionality.
-Project Structure
+# 📊 Data Science Technical Test – Mayssem Hannachi
+
+## 🗂 Overview
+
+This project processes a Kaggle **cyberbullying dataset (8,452 rows)** through a pipeline involving:
+
+- **MongoDB** for storage  
+- **Text preprocessing**  
+- **NLP analysis**  
+- **Elasticsearch** for indexing  
+- **Kibana** for visualization
+
+Each processing stage includes corresponding unit tests to ensure reliability and modularity.
+
+---
+
+## 📁 Project Structure
+
 project/
 ├── scripts/
-│   ├── scraper.py
-│   ├── preprocessing.py
-│   ├── nlp_pipeline.py
-│   ├── es_ingest.py
+│   ├── scraper.py              # Load data to MongoDB
+│   ├── preprocessing.py        # Clean and normalize text
+│   ├── nlp_pipeline.py         # Sentiment analysis & language detection
+│   ├── es_ingest.py            # Elasticsearch ingestion
 ├── tests/
 │   ├── test_scraper.py
 │   ├── test_preprocessing.py
 │   ├── test_nlp_pipeline.py
 ├── dataset/
-│   └── dataset.csv
-├── screenshots/
+│   └── dataset.csv             # Original dataset
+├── screenshots/                # Kibana visualization screenshots
 ├── Dockerfile
 ├── docker-compose.yml
 ├── requirements.txt
 ├── README.md
 
-Prerequisites
+---
 
-Python: 3.9 or later (via Anaconda cyberbullying_env)
-MongoDB: Community edition (brew install mongodb-community)
-Elasticsearch: 8.8.0 (brew install elastic/tap/elasticsearch-full)
-Kibana: 8.8.0 (brew install elastic/tap/kibana-full)
-Docker: For containerized execution
+## ⚙️ Prerequisites
 
-Setup
-1. Create a Conda Environment
+- Python 3.9+ (recommended: via Conda)
+- MongoDB (e.g., `brew install mongodb-community`)
+- Elasticsearch 8.8.0 (`brew install elastic/tap/elasticsearch-full`)
+- Kibana 8.8.0 (`brew install elastic/tap/kibana-full`)
+- Docker & Docker Compose
+
+---
+
+## 🧪 Setup
+
+### 1. Create & Activate Conda Environment
+```bash
 conda create -n cyberbullying_env python=3.9 -y
-
-2. Activate the Environment
 conda activate cyberbullying_env
 
-3. Install Dependencies
+2. Install Python Dependencies
+
 pip install -r requirements.txt
 
-4. Download Required NLTK Data
+3. Download NLTK Data
+
 python -c "import nltk; nltk.download('punkt'); nltk.download('stopwords'); nltk.download('wordnet'); nltk.download('punkt_tab')"
 
-5. Start Services
 
-MongoDB:
-brew services start mongodb-community
+⸻
 
-Or, if port 27017 is in use, specify a custom path and port:
-mongod --dbpath /data/db --port 27017  # Use 27018 if 27017 is occupied
+▶️ Execution (Manual Mode)
 
+Run from project root:
 
-Elasticsearch:
-elasticsearch
+🔹 Stage 1: Load CSV to MongoDB
 
-
-Kibana:
-kibana
-
-
-
-Execution
-Run each stage sequentially from the project root directory.
-Stage 1: Load CSV to MongoDB
 python scripts/scraper.py --csv "dataset/dataset.csv"
 
-Verify:
+Verify in MongoDB:
+
 mongosh --port 27017
 use harcelement
 db.posts.find().limit(5)
 
-Stage 2: Text Preprocessing
+
+⸻
+
+🔹 Stage 2: Text Preprocessing
+
 python scripts/preprocessing.py
 
 Verify:
-mongosh --port 27017
-use harcelement
+
 db.posts.find({}, {Text: 1, Text_cleaned: 1}).limit(5)
 
-Stage 3: NLP Processing
+
+⸻
+
+🔹 Stage 3: NLP Pipeline
+
 python scripts/nlp_pipeline.py
 
-Verify:
-mongosh --port 27017
-use harcelement
-db.posts.find().limit(5)
 
-Stage 4: Elasticsearch Indexing
+⸻
+
+🔹 Stage 4: Elasticsearch Indexing
+
 python scripts/es_ingest.py
 
 Verify:
+
 curl -X GET "http://localhost:9200/harcelement_posts/_search?pretty"
 
-Stage 5: Kibana Visualization
 
-View screenshots and video demo in the screenshots/ folder.
+⸻
 
-Running Test Units
-Test units validate the functionality of each script. Ensure MongoDB is running before testing:
-brew services start mongodb-community
+🔹 Stage 5: Kibana Visualization
+	•	Access Kibana: http://localhost:5601
+	•	Create index pattern: harcelement_posts*
+	•	View sample dashboards in screenshots/
 
-Install pytest
+⸻
+
+🧪 Run Unit Tests
+
+Setup
+
 pip install pytest
 
 Run All Tests
+
 PYTHONPATH=. pytest tests/ -v
 
-Individual Test Units
-Stage 1: Test scraper.py
+
+⸻
+
+Individual Test Scripts
+
+✅ Test scraper.py
+
 PYTHONPATH=. pytest tests/test_scraper.py -v
 
-Tests:
+	•	test_load_and_store_data_tmp: Test with 2-row temp file
+	•	test_load_and_store_data_real: Test with full dataset (8,452 rows)
 
-test_load_and_store_data_tmp: Verifies loading a temporary CSV (2 rows) into MongoDB.
-test_load_and_store_data_real: Verifies loading the full dataset (8,452 rows) into MongoDB.
-Requirement: dataset/dataset.csv must exist.
+Ensure dataset/dataset.csv exists
 
+⸻
 
+✅ Test preprocessing.py
 
-Stage 2: Test preprocessing.py
 PYTHONPATH=. pytest tests/test_preprocessing.py -v
 
-Tests:
+	•	test_preprocess_text: Verifies HTML, URL, and special char removal
 
-test_preprocess_text: Verifies text cleaning (e.g., removing HTML, URLs, special characters).
+⸻
 
-Stage 3: Test nlp_pipeline.py
+✅ Test nlp_pipeline.py
+
 PYTHONPATH=. pytest tests/test_nlp_pipeline.py -v
 
-Tests:
+	•	test_nlp_process: Language detection + Sentiment analysis
 
-test_nlp_process: Verifies language detection and sentiment analysis.
+⸻
 
-Running the Project with Docker
+🐳 Docker-Based Execution
+
 Build and Start All Services
+
 docker-compose up --build
 
-Run Each Pipeline Step
+Run Pipeline Steps
+
 docker-compose run app python scripts/scraper.py --csv dataset/dataset.csv
 docker-compose run app python scripts/preprocessing.py
 docker-compose run app python scripts/nlp_pipeline.py
 docker-compose run app python scripts/es_ingest.py
 
-Access Kibana
-
-Open http://localhost:5601 in your browser.
-Create an index pattern for harcelement_posts*.
-Build visualizations and dashboards.
+Access Kibana Dashboard
+	•	http://localhost:5601
+	•	Create index: harcelement_posts*
 
 Stop All Services
-Press Ctrl+C in the terminal running docker-compose up, then:
+
 docker-compose down
 
-Troubleshooting
 
-File Not Found: Ensure the CSV is located at dataset/dataset.csv.
-MongoDB Errors: Verify MongoDB is running on port 27017 (or 27018 if configured). Update the MongoClient port in scripts if needed.
-Column Mismatch: Ensure scraper.py maps CSV columns (Text, Types, Label) correctly.
+⸻
 
-Notes
+🛠 Troubleshooting
 
-Dataset: Contains 8,452 rows with columns Text, Types, Label.
-MongoDB Port: Default is 27017; use 27018 if 27017 is in use.
-Screenshots: Stored in screenshots/ for Kibana visualizations.
-Docker: Use docker-compose.yml for containerized execution.
-When running in Docker Compose, the app connects to MongoDB and Elasticsearch using service names (mongodb, elasticsearch) as hostnames, not localhost.
+Issue	Solution
+File Not Found	Ensure CSV is at dataset/dataset.csv
+MongoDB connection issues	Check Mongo is running on 27017 (or change script to 27018)
+Column mismatch in CSV	Verify columns: Text, Types, Label
+Docker Mongo/ES access	Use container service names mongodb, elasticsearch instead of localhost
+
+
+⸻
+
+📌 Notes
+	•	Dataset: 8,452 rows, columns: Text, Types, Label
+	•	MongoDB default port: 27017 (use 27018 if needed)
+	•	Screenshots: See screenshots/ folder
+	•	Docker-friendly: All services defined in docker-compose.yml
